@@ -20,23 +20,21 @@ export  class FormPrecio extends Component {
         }
         if (this.precio != null && this.origen=='actualizar') {
             this.state = {
-                id: this.idProducto,
-                idPrecio: this.precio.id,
+                idProd: this.idProducto,
+                id: this.precio.id,
                 cantidad: this.precio.cantidad,
                 precio: this.precio.precio,               
                 valorSeleccionado: this.precio.unidad,
                 validarPrecio:'',
                 validarUnidadPrecio:'',
                 validarCantidadPrecio:'',
-            }
-            
-            let srvPrecios=new ServicioPrecios();
-            srvPrecios.registrarEscuchaTodas(precios, this.repintarLista, this.idProducto);
+            } 
+           
 
         } else {
        this.state = {
-                id: this.idProducto, 
-                idPrecio: '',
+                idProd: this.idProducto, 
+                id: '',
                 cantidad: '',
                 precio: '',  
                 valorSeleccionado: 'Kg',
@@ -47,11 +45,7 @@ export  class FormPrecio extends Component {
         }
         
     }
-    repintarLista = (precios) => {
-        this.setState({
-            listPrecios: precios
-        })
-    }
+   
    guardarPrecio=()=>{
     let servPrecios = new ServicioPrecios();
     let validar=true;
@@ -83,7 +77,7 @@ export  class FormPrecio extends Component {
     {
        servPrecios.crearProductoPrecio(this.idProducto,
         {            
-            idPrecio: this.state.valorSeleccionado + this.state.cantidad,
+            id: this.state.valorSeleccionado + this.state.cantidad,
             cantidad: this.state.cantidad,
             precio: this.state.precio,
             unidad: this.state.valorSeleccionado,
@@ -98,7 +92,7 @@ export  class FormPrecio extends Component {
     let validar=true;
     this.validarNombrePrecio='';
 
-    if(this.state.idPrecio==='' || this.state.idPrecio===undefined)
+    if(this.state.precio==='' || this.state.precio===undefined)
     {
         this.setState({validarNombrePrecio:'Precio Requerido'})
         validar=false;
@@ -107,22 +101,15 @@ export  class FormPrecio extends Component {
   //Si pasa todas las validaciones crea el producto  
     if(validar===true)
     {
-       servPrecios.actualizar({
-            idPrecio: this.state.idPrecio,
-            cantidad: this.state.cantidad,
-            precio: this.state.precio,
-            unidad: this.state.valorSeleccionado
-        
+       servPrecios.actualizar(this.state.idProd,
+        {
+            id: this.state.id,
+            precio: this.state.precio        
         });
         this.props.navigation.goBack()
     }
  }
  
-    eliminarPrecio=(codPrecio)=>{
-        let servPrecios = new ServicioPrecios();
-        servPrecios.eliminar(this.state.id, codPrecio);
-    }
-    
     render() {
         return <View>
             <Input
@@ -181,23 +168,7 @@ export  class FormPrecio extends Component {
                 }
             />
              }
-        { !this.pintarBoton && 
-        <View > 
-            <Text style={styles.headline} >Lista de Precios </Text>
-            <FlatList                
-                data = {this.state.listPrecios}
-                renderItem = {(objeto)=>{return (<ItemPrecio precio1={objeto.item}
-                                                            fnEliminarPrecio={this.eliminarPrecio}
-                                                            fnActualizar={this.actualizarPrecio}
-                />);
-            }}
-                keyExtractor = {(objetoPrecio)=>{return objetoPrecio.idPrecio}}
-            />
-        <ActionButton
-            onPress={() => { this.props.navigation.navigate("ListPrecioScreen",{ origen: "nuevo" }) }}
-          />
-        </View> 
-        }
+        
         
         </View>
         

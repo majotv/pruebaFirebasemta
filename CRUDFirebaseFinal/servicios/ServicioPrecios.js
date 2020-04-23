@@ -29,40 +29,38 @@ export class ServicioPrecios{
     crearProductoPrecio=(idProducto, precio)=>{
         global.db.collection("productos")
         .doc(idProducto).collection("precios")
-        .doc(precio.idPrecio).set(precio).then(function () {
+        .doc(precio.id).set(precio).then(function () {
             Alert.alert("Precio agregado")
         }).catch(function (error) {
             Alert.alert("error" + error)
         })
     }
    
-    eliminar = (idProducto, idPrecio) => {
+    eliminar = (idProducto, id) => {
         global.db
         .collection("productos")
         .doc(idProducto)
         .collection("precios")
-        .doc(idPrecio).delete().then(function () {
+        .doc(id).delete().then(function () {
             console.log("Document successfully deleted!");
         }).catch(function (error) {
             console.error("Error removing document: ", error);
         });
     }
-    actualizar=(producto)=>{
-        global.db.collection("productos").doc(producto.id).collection("precios").doc(producto.idPrecio).update(
+    actualizar=(idProducto, precio)=>{
+        global.db.collection("productos").doc(idProducto).collection("precios").doc(precio.id).update(
             {
-                /*precio:producto.id
-                unidad:
-                cantidad:
-                id: 1 lb*/
+                precio:precio.precio
             }
         ).then(function () {
-            Alert.alert("actualizado")
+            Alert.alert("actualizado precio")
         }
         ).catch(function (error) {
             Alert.alert("error" + error)
         }
         );
     }
+
     registrarEscuchaTodas = (arreglo, fnRepintar, idProducto) => {
         let arregloUtil=new ArregloUtil(arreglo);
         global.db.collection("productos").doc(idProducto).collection("precios").onSnapshot(

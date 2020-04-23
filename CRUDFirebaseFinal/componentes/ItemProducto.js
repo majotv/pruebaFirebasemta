@@ -26,10 +26,11 @@ export class ItemProducto extends Component{
              <Button 
                   style={styles.button_item} //no pinta
                   title ="x"                  
-                  onPress={()=>{this.props.fnEliminar(this.props.producto)}}>             
+                  onPress={()=>{this.props.fnEliminar(this.props.producto)}}>   
+                            
               </Button>
              </View>
-                              
+
            </View>
 
            

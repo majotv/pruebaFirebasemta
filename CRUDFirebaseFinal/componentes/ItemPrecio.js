@@ -21,7 +21,7 @@ export class ItemPrecio extends Component{
         <View style={{flex:1, flexDirection:'row', backgroundColor:'orange'}}>
             <Button                   
                   title ="x"                  
-                  onPress={()=>{this.props.fnEliminarPrecio(this.props.precio.idPrecio)}}
+                  onPress={()=>{this.props.fnEliminarPrecio(this.props.precio.id)}}
                  //Alert.alert("Eliminado")
                 
                   

@@ -99,8 +99,23 @@ export  class FormProduct extends Component {
      //recuperar(nombre,this.pintarImage)
      this.setState({imagen:nombre})
  
-
  }
+
+    eliminarPrecio=(codPrecio)=>{
+        let servPrecios = new ServicioPrecios();
+        servPrecios.eliminar(this.state.id, codPrecio);
+    }
+
+
+    actualizarPrecioProd=(precio)=>{
+        this.props.navigation.navigate("PrecioScreen",
+                            {
+                                origen: "actualizar",
+                                precio: precio,
+                                idProducto: this.state.id
+                            })
+    }
+
     render() {
         return <View> 
         
@@ -146,7 +161,8 @@ export  class FormProduct extends Component {
                 <FlatList                
                     data = {this.state.listPrecios}
                     renderItem = {(objeto)=>{return <ItemPrecio precio={objeto.item}                
-                                                                /*fnActualizar={this.actualizar}*/
+                                                                fnEliminarPrecio={this.eliminarPrecio}
+                                                                fnActualizar={this.actualizarPrecioProd}
                     />}}
                     keyExtractor = {(objetoPrecio)=>{return objetoPrecio.id}}
                 />
