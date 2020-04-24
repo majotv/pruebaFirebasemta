@@ -4,7 +4,7 @@ import { ArregloUtil } from '../utils/utils';
 import { Alert } from 'react-native';
 import '@firebase/storage';
 
-export class ServicioProductos {
+export class ServicioCombos {
    constructor() {
       if (global.firebaseRegistered != true) {
          global.firebaseConfig = {
@@ -22,23 +22,51 @@ export class ServicioProductos {
          global.storage = firebase.storage();
       }
    }
-
-   crear = producto => {
+   crear = combo => {
       global.db
-         .collection('productos')
-         .doc(producto.id)
-         .set(producto)
+         .collection('combos')
+         .doc(combo.id)
+         .set(combo)
          .then(function() {
-            Alert.alert('Producto agregado');
+            Alert.alert('Combo agregado');
          })
          .catch(function(error) {
             Alert.alert('error' + error);
          });
    };
 
+   crearComboProducto = (idCombo, producto) => {
+      global.db
+         .collection('combos')
+         .doc(idCombo)
+         .collection('productosCombo')
+         .doc(producto.id)
+         .set(producto)
+         .then(function() {
+            Alert.alert('Producto Combo agregado');
+         })
+         .catch(function(error) {
+            Alert.alert('error' + error);
+         });
+   };
+
+   eliminarComboProducto = (idCombo,idProd) => {
+      global.db
+         .collection('combos')
+         .doc(idCombo)
+         .collection('productosCombo')
+         .doc(idProd)
+         .delete()
+         .then(function() {
+            console.log('Document successfully deleted!');
+         })
+         .catch(function(error) {
+            console.error('Error removing document: ', error);
+         });
+   };
    eliminar = id => {
       global.db
-         .collection('productos')
+         .collection('combos')
          .doc(id)
          .delete()
          .then(function() {
@@ -50,21 +78,24 @@ export class ServicioProductos {
    };
    actualizar = objeto => {
       global.db
-         .collection('productos')
+         .collection('combos')
          .doc(objeto.id)
          .update({
             imagen: objeto.imagen,
+            precio: objeto.precio,
+            alias: objeto.alias,
          })
          .then(function() {
-            Alert.alert('actualizado');
+            Alert.alert('Combo Actualizado');
          })
          .catch(function(error) {
             Alert.alert('error' + error);
          });
    };
+
    registrarEscuchaTodas = (arreglo, fnRepintar) => {
       let arregloUtil = new ArregloUtil(arreglo);
-      global.db.collection('productos').onSnapshot(function(snapShot) {
+      global.db.collection('combos').onSnapshot(function(snapShot) {
          snapShot.docChanges().forEach(function(change) {
             if (change.type == 'added') {
                arregloUtil.agregar(change.doc.data(), fnRepintar);
@@ -78,32 +109,25 @@ export class ServicioProductos {
          });
       });
    };
-   recuperarProductos = async fnRepintar => {
-      global.db
-         .collection('productos')
-         .get()
-         .then(async function(coleccion) {
-            let documentos = coleccion.docs;
-            let productos = [];
-            for (let i = 0; i < documentos.length; i++) {
-               productos.push(documentos[i].data());
 
-               let coleccionPrecios = await global.db
-                  .collection('productos')
-                  .doc(documentos[i].id)
-                  .collection('precios')
-                  .get();
-               let precios = coleccionPrecios.docs;
-               let listaPrecios = [];
-               for (let j = 0; j < precios.length; j++) {
-                  listaPrecios.push(precios[j].data());
+   registrarEscuchaProductoComboTodas = (arreglo, fnRepintar, idCombo) => {
+      let arregloUtil = new ArregloUtil(arreglo);
+      global.db
+         .collection('combos')
+         .doc(idCombo)
+         .collection('productosCombo')
+         .onSnapshot(function(snapShot) {
+            snapShot.docChanges().forEach(function(change) {
+               if (change.type == 'added') {
+                  arregloUtil.agregar(change.doc.data(), fnRepintar);
                }
-               productos[i].listPrecios = listaPrecios;
-            }
-            fnRepintar(productos);
-         })
-         .catch(function(error) {
-            console.log('Error getting document:', error);
+               if (change.type == 'modified') {
+                  arregloUtil.actualizar(change.doc.data(), fnRepintar);
+               }
+               if (change.type == 'removed') {
+                  arregloUtil.eliminar(change.doc.data(), fnRepintar);
+               }
+            });
          });
    };
 }

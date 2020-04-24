@@ -1,105 +1,329 @@
-import React, { Component } from 'react'
-import { View, Text, StyleSheet, Alert, Button } from 'react-native'
-import { Input } from 'react-native-elements';
-import { ServicioCombo } from '../servicios/ServicioCombo';
+import React, { Component } from 'react';
+import { View, Text, StyleSheet, Alert, Button, FlatList } from 'react-native';
+import { Input, Avatar } from 'react-native-elements';
+import { ServicioCombos } from '../servicios/ServicioCombos';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { ItemComboProducto } from '../componentes/ItemComboProducto';
+import ActionButton from 'react-native-action-button';
 
+export class FormCombo extends Component {
+   constructor(props) {
+      super(props);
+      this.origen = this.props.route.params.origen;
+      this.combo = this.props.route.params.combo;
+      this.pintarBoton = false;
+      this.desabilitarElemento =true;
+      let productosCombo = [];
+      if (this.origen == 'nuevo') {
+         this.pintarBoton = true;
+         this.desabilitarElemento=false;
+      }
 
-export default class FormCombo extends Component {
-    constructor(props) {
-        super(props);
-        /*this.origen = this.props.route.params.origen;
-        this.persona = this.props.route.params.persona;
-        if (this.persona != null) {
-            this.state = {
-                id: this.persona.id,
-                nombre: this.persona.nombre,
-                apellido: this.persona.apellido,
-                telefono: this.persona.telefono
-            }
-        } else {*/
-            this.state = {
-                idCombo: '',
-                cantidad:0,
-                idProd:'',
-                cantidadProd: 0,
-                unidad: '',
-                precio: 0
-            }
-        //}
-    }
+      if (this.combo != null) {
+         this.state = {
+            id: this.combo.id,
+            imagen: this.combo.imagen,
+            precio: '' + this.combo.precio,
+            alias: this.combo.alias,
+            validarNombreCombo: '',
+            validarPrecio: '',
+            validarAlias: '',
+            listProductosCombo: productosCombo,
+         };
+         let srvCombos = new ServicioCombos();
+         srvCombos.registrarEscuchaProductoComboTodas(
+            productosCombo,
+            this.repintarLista,
+            this.combo.id
+         );
+      } else {
+         this.state = {
+            id: '',
+            imagen: '',
+            precio: '',
+            alias: '',
+            validarNombreCombo: '',
+            validarPrecio: '',
+            validarAlias: '',
+            listProductosCombo: productosCombo,
+         };
+      }
+   }
 
-    render() {
-        return <View>
-          <Input
-                value={this.state.idCombo}
-                placeholder="Nombre Combo"
-                label="Nombre Combo"
-                onChangeText={(text) => { this.setState({ idCombo: text }) }}
-            />
-            <Input
-                value={this.state.cantidad}
-                placeholder="Cantidad"
-                label="Cantidad"
-                onChangeText={(text) => { this.setState({ cantidad: text }) }}
-            />
+   repintarLista = productosCombo => {
+      global.productosSeleccionados = [];
+      for (let i = 0; i < productosCombo.length; i++) {
+         global.productosSeleccionados.push({
+            id: productosCombo[i].id,
+            idPrecio: productosCombo[i].idPrecio,
+         });
+      }
+      this.setState({
+         listProductosCombo: productosCombo,
+      });
+   };
 
-            <Button
-                title="Guardar"
-               /* onPress={() => {
-                    console.log("Datos"+this.state.idCombo+" "+this.state.cantidad);
-                }}*/
-                onPress={() => {
-                    let servCombo=new ServicioCombo();
-                    servCombo.crear({
-                        id:       this.state.idCombo,
-                        cantidad: this.state.cantidad
-                    });
-                    //console.log("Datos"+id+" "+cantidad);
-                  //  this.props.navigation.goBack()
-                }}
-            />
+   guardarCombo = () => {
+      let servCombo = new ServicioCombos();
+      let validar = true;
+      this.validarNombreCombo = '';
+      this.state.validarPrecio = '';
+      this.state.validarAlias = '';
+      //Validaciones
 
-            <Input
-                value={this.state.idProd}
-                placeholder="Nombre Producto"
-                label="Nombre Producto"
-                onChangeText={(text) => { this.setState({ idProd: text }) }}
-            />
-            <Input
-                value={this.state.cantidadProd}
-                placeholder="Cantidad Producto"
-                label="Cantidad Producto"
-                onChangeText={(text) => { this.setState({ cantidadProd: text }) }}
-            />
-            <Input
-                value={this.state.unidad}
-                placeholder="Unidad"
-                label="Unidad"
-                onChangeText={(text) => { this.setState({ unidad: text }) }}
-            />
-            <Input
-                value={this.state.precio}
-                placeholder="Precio"
-                label="Precio"
-                onChangeText={(text) => { this.setState({ precio: text }) }}
-            />
-            <Button
-                title="Guardar"
-                /*onPress={() => {
-                    console.log("Datos"+this.state.idProd+" "+this.state.cantidadProd+" "+this.unidad+" "+this.precio);
-                }}*/
-                onPress={() => {
-                    let servCombo=new ServicioCombo();
-                    servCombo.crearComboProducto({
-                        id:            this.state.idCombo,
-                        idProd:        this.state.idProd,
-                        cantidadProd:  this.state.cantidadProd ,
-                        unidad:        this.state.unidad,
-                        precio:        this.state.precio
-                    });
-                }}
-            />
+      if (this.state.id === '' || this.state.id === undefined) {
+         this.setState({ validarNombreCombo: 'Campo Nombre Combo Requerido' });
+         validar = false;
+      }
 
-        </View>
-    }
+      if (this.state.precio === '' || this.state.precio === undefined) {
+         this.setState({ validarPrecio: 'Campo Precio Requerido' });
+         validar = false;
+      }
+
+      if (this.state.alias === '' || this.state.alias === undefined) {
+         this.setState({ validarPrecio: 'Campo Alias Requerido' });
+         validar = false;
+      }
+      //Si pasa todas las validaciones crea el combo
+      if (validar === true) {
+         servCombo.crear({
+            id: this.state.id,
+            imagen: this.state.imagen,
+            precio: this.state.precio,
+            alias: this.state.alias,
+         });
+         this.props.navigation.goBack();
+      }
+   };
+
+   ActualizarCombo = () => {
+      let servCombo = new ServicioCombos();
+      let validar = true;
+      this.validarNombreCombo = '';
+      this.state.validarPrecio = '';
+      this.state.validarAlias = '';
+      //Validaciones
+
+      if (this.state.id === '' || this.state.id === undefined) {
+         this.setState({ validarNombreCombo: 'Campo Nombre Combo Requerido' });
+         validar = false;
+      }
+
+      if (this.state.precio === '' || this.state.precio === undefined) {
+         this.setState({ validarPrecio: 'Campo Precio Requerido' });
+         validar = false;
+      }
+
+      if (this.state.alias === '' || this.state.alias === undefined) {
+         this.setState({ validarPrecio: 'Campo Alias Requerido' });
+         validar = false;
+      }
+      //Si pasa todas las validaciones crea el combo
+      if (validar === true) {
+         let servCombo = new ServicioCombos();
+         servCombo.actualizar({
+            id: this.state.id,
+            imagen: this.state.imagen,
+            precio: this.state.precio,
+            alias: this.state.alias,
+         });
+         this.props.navigation.goBack();
+      }
+   };
+
+   recuperarNombreGuardado = nombre => {
+      this.setState({ imagen: nombre });
+   };
+
+   render() {
+      return (
+         <View style={styles.columna}>
+            <View style={styles.columna}>
+               <View>
+                  <Input
+                     errorMessage={this.state.validarNombreCombo}
+                     leftIcon={
+                        <Icon
+                           name="shopping-cart"
+                           size={24}
+                           color="black"
+                           style={styles.icon}
+                        />
+                     }
+                     value={this.state.id}
+                     placeholder="Nombre Combo"
+                     label="Nombre Combo"
+                     onChangeText={text => {
+                        this.setState({ id: text });
+                     }}
+                     disabled={this.desabilitarElemento}
+                  />
+                  <Input
+                     errorMessage={this.state.validarPrecio}
+                     leftIcon={
+                        <Icon
+                           name="money"
+                           size={24}
+                           color="black"
+                           style={styles.icon}
+                        />
+                     }
+                     value={this.state.precio}
+                     placeholder="Precio"
+                     label="Precio"
+                     onChangeText={text => {
+                        this.setState({ precio: parseFloat(text) });
+                     }}
+                  />
+
+                  <Input
+                     errorMessage={this.state.validarAlias}
+                     leftIcon={
+                        <Icon
+                           name="drupal"
+                           size={24}
+                           color="black"
+                           style={styles.icon}
+                        />
+                     }
+                     value={this.state.alias}
+                     placeholder="Alias"
+                     label="Alias"
+                     onChangeText={text => {
+                        this.setState({ alias: text });
+                     }}
+                  />
+               </View>
+               <View style={styles.imagenes} >
+                  <View >
+                     <Button
+                        title="Cargar Imagen Combo"
+                        onPress={() => {
+                           this.props.navigation.navigate('CargarImagenScren', {
+                              fnRecuperarRuta: this.recuperarNombreGuardado,
+                           });
+                        }}
+                     />
+                  </View>
+                  <View style={styles.imagenContenido}>
+                     <Avatar
+                        rounded
+                        size={80}
+                        source={{ uri: this.state.imagen }}
+                     />
+                  </View>
+               </View>
+               <View style={styles.boton}>
+                  {this.pintarBoton && (
+                     <Button title="Guardar" onPress={this.guardarCombo} />
+                  )}
+                  {!this.pintarBoton && (
+                     <Button
+                        title="Actualizar"
+                        onPress={this.ActualizarCombo}
+                     />
+                  )}
+               </View>
+               {!this.pintarBoton && (
+                  <View style={{flex:3}} >
+                     <View>
+                        <Text style={styles.textoNegritaSubrayado}>
+                           Lista de Productos del Combo
+                        </Text>
+                        <FlatList
+                           data={this.state.listProductosCombo}
+                           renderItem={objeto => {
+                              return (
+                                 <ItemComboProducto
+                                    comboProducto={objeto.item}
+                                    //fnEliminar={this.eliminar}
+                                    //fnActualizar={this.actualizar}
+                                 />
+                              );
+                           }}
+                           keyExtractor={objetoComboProducto => {
+                              return objetoComboProducto.id;
+                           }}
+                        />
+                     </View>
+                     <ActionButton
+                        onPress={() => {
+                           this.props.navigation.navigate(
+                              'ListProductPrecioScreen',
+                              {
+                                 origen: 'nuevo',
+                                 idCombo: this.state.id,
+                              }
+                           );
+                        }}
+                     />
+                  </View>
+               )}
+        
+            </View>
+            
+              
+         </View>
+      );
+   }
 }
+const styles = StyleSheet.create({
+   container: {
+      flex: 1,
+      backgroundColor: '#fff',
+      alignItems: 'stretch',
+      justifyContent: 'center',
+   },
+   headline: {
+      fontWeight: 'bold',
+      fontSize: 18,
+      marginTop: 0,
+      width: 200,
+      height: 25,
+      justifyContent: 'center',
+      alignItems: 'center',
+      textAlign: 'center',
+   },
+   icon: {
+      marginRight: 10,
+   },
+   columna: {
+      flex: 1,
+      borderBottomColor: 'gray',
+      borderBottomWidth: 1,
+      backgroundColor: 'yellow',
+   },
+   imagenes: {
+      flex: 2,
+      backgroundColor: 'green',
+
+   },
+   imagenContenido:{
+      flex: 1,
+      backgroundColor:'pink',
+      alignItems:'center',
+      justifyContent:'center'
+   },
+   boton:{
+      flex:1
+   },
+   textoNegrita: {
+      fontWeight: 'bold',
+      fontSize: 17,
+      marginTop: 0,
+      marginLeft: 10,
+   },
+   texto: {
+      fontSize: 15,
+      marginTop: 0,
+      marginLeft: 10,
+   },
+   textoNegritaSubrayado: {
+      fontWeight: 'bold',
+      fontSize: 17,
+      marginTop: 0,
+      borderBottomColor: 'gray',
+      borderBottomWidth: 1,
+   },
+});
