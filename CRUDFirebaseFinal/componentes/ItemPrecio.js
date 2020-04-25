@@ -8,17 +8,19 @@ export class ItemPrecio extends Component{
 
   
     render(){
-    return  <View style={{flex: 6, flexDirection:'row', backgroundColor:'skyblue'} }>
+    return  <View style={{flex: 1, flexDirection:'row', backgroundColor:'green',alignItems: 'stretch'} }>
+        <View style={{flex:7,alignItems:'stretch',backgroundColor:'blue'}}>
 
         <TouchableHighlight onPress={()=>{this.props.fnActualizar(this.props.precio)}}>
             
-        <View style={{flex:5, flexDirection:'row', backgroundColor:'pink'}}>
+        <View style={{flex:1, flexDirection:'row', backgroundColor:'pink',justifyContent:'center'}}>
                 <Text > {this.props.precio.cantidad}</Text>
                 <Text > {this.props.precio.unidad }</Text>
                 <Text > $ {this.props.precio.precio }</Text>
         </View>
         </TouchableHighlight>
-        <View style={{flex:1, flexDirection:'row', backgroundColor:'orange'}}>
+        </View>
+        <View style={{flex:1}}>
             <Button                   
                   title ="x"                  
                   onPress={()=>{this.props.fnEliminarPrecio(this.props.precio.id)}}
